@@ -11,7 +11,6 @@
 #                 gdisk, ntfs-3g, lvm, awk, partclone
 #
 #       AUTHORS:  Dennis Anfossi, Anonymous Rabbit
-#  ORGANIZATION:  ITfor s.r.l.
 #       CREATED:  14/7/2013 15:33:08 CET
 #       LICENSE:  GPLv2
 #      REVISION:  4.2beta
@@ -19,7 +18,7 @@
 
 function ghost {
         D_PART_TO_SAVE=`echo $1 | sed 's#/dev/##g'`
-                D_PART_FS_TYPE=`blkid -s TYPE $1 | sed -n 's/[^=]*=//p' | sed 's/"//g'`
+        D_PART_FS_TYPE=`blkid -s TYPE $1 | sed -n 's/[^=]*=//p' | sed 's/"//g'`
         echo "Saving partition:" ${D_PART_TO_SAVE}
         echo -n "Saving with fsarchiver.."
         fsarchiver savefs ./${D_PART_TO_SAVE}.fsa /dev/${D_PART_TO_SAVE} > /dev/null 2>&1
@@ -35,22 +34,22 @@ function ghost {
                         echo -e "Done!\n"
                 else
                         echo -e "Failed!\n"
-                                                echo -n "Removing partimage temp files.."
+                        echo -n "Removing partimage temp files.."
                         rm -rf pi* > /dev/null 2>&1
-                                                echo -e "Done!\n"
-                                                echo -e "Saving with parclone..\n"
-                                                partclone.$D_PART_FS_TYPE -q -c -s /dev/${D_PART_TO_SAVE} -o ./${D_PART_TO_SAVE}.img
-                                if [ $? -eq 0 ] ; then
+                        echo -e "Done!\n"
+                        echo -e "Saving with parclone..\n"
+                        partclone.$D_PART_FS_TYPE -q -c -s /dev/${D_PART_TO_SAVE} -o ./${D_PART_TO_SAVE}.img
+                        if [ $? -eq 0 ] ; then
                                 echo -e "\nPartclone has done!\n"
-                                else
+                        else
                                 echo -e "\nPartclone has failed!\n"
-                                                        echo -n "Removing partclone temp files.."
+                                echo -n "Removing partclone temp files.."
                                 #rm -rf partclone_temp_file ? > /dev/null 2>&1
-                                                        echo -e "Done!\n"
-                                                        echo -n "Saving with partclone.dd.."
-                                                        partclone.dd -q -c -s /dev/${D_PART_TO_SAVE} -o ./${D_PART_TO_SAVE}.img.dd
-                                                        echo -e "\nDone!\n"
-                                                fi
+                                echo -e "Done!\n"
+                                echo -n "Saving with partclone.dd.."
+                                partclone.dd -q -c -s /dev/${D_PART_TO_SAVE} -o ./${D_PART_TO_SAVE}.img.dd
+                                echo -e "\nDone!\n"
+                        fi
                 fi
         fi
 }
@@ -100,7 +99,7 @@ i=0
 while [ $i -lt ${#dpartnumarray[@]} ]
 do
 
-#                echo "${dpartnumarray[$i]} ${dparttypearray[$i]}"
+# echo "${dpartnumarray[$i]} ${dparttypearray[$i]}"
 
 D_FULL_PATH=${D_DISKS}"${dpartnumarray[$i]}"
 if ! grep -q $D_FULL_PATH /proc/mounts; then        
@@ -154,30 +153,30 @@ if ! grep -q $D_FULL_PATH /proc/mounts; then
         8E00)
                         # Linux LVM
                         echo $D_FULL_PATH "is Linux LVM"
-                                                echo -n "Activing.."
+                        echo -n "Activating.."
                         vgchange -ay > /dev/null 2>&1
-                                                if [ $? -eq 0 ] ; then
-                                           echo -e "Done!\n"
-                                                        D_LVM=`lvdisplay | grep [pP]ath | awk '{ print $3 }'`
+                        if [ $? -eq 0 ] ; then
+                                echo -e "Done!\n"
+                                D_LVM=`lvdisplay | grep [pP]ath | awk '{ print $3 }'`
                                 for line in $D_LVM;
                                         do
-                                D_LVM_DIR=`lvdisplay | grep [vV][gG] | grep [nN]ame | awk '{ print $3 }'`
-                                    for x in $D_LVM_DIR;
+                                        D_LVM_DIR=`lvdisplay | grep [vV][gG] | grep [nN]ame | awk '{ print $3 }'`
+                                        for x in $D_LVM_DIR;
                                         do
-                                        mkdir -p ./$x > /dev/null 2>&1
+                                                mkdir -p ./$x > /dev/null 2>&1
                                         done
-                                 ghost $line
-                                        done
-                                                        echo -n "Deactivating LVM.."
+                                        ghost $line
+                                done
+                                echo -n "Deactivating LVM.."
                                 vgchange -an > /dev/null 2>&1
-                                                        if [ $? -eq 0 ] ; then
-                                                                echo -e "Done!\n"
-                                                        else
-                                                                echo -e "Failed!\n"
-                                                        fi                                                
+                                if [ $? -eq 0 ] ; then
+                                        echo -e "Done!\n"
                                 else
-                                                        echo -e "Failed to backup!\n"
-                                                fi                        
+                                        echo -e "Failed!\n"
+                                fi                                                
+                        else
+                                echo -e "Failed to backup!\n"
+                        fi                        
                         # action
             ;;
 
